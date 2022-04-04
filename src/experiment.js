@@ -3,7 +3,7 @@
  * @description rule follower shift during exception learning
  * @version 0.1.0
  *
- * @assets assets/
+ * @assets assets/cat_stims/flower_stim_0.125/
  */
 
 // You can import stylesheets (.scss or .css).
@@ -12,7 +12,6 @@ import "../styles/main.scss";
 import FullscreenPlugin from "@jspsych/plugin-fullscreen";
 import HtmlKeyboardResponsePlugin from "@jspsych/plugin-html-keyboard-response";
 import PreloadPlugin from "@jspsych/plugin-preload";
-import HTMLButtonResponsePlugin from "@jspsych/plugin-html-button-response";
 import CategorizeImagePlugin from "@jspsych/plugin-categorize-image";
 import SurveyMultipleChoicePlugin from "@jspsych/plugin-survey-multi-choice";
 
@@ -39,11 +38,12 @@ export async function run({
     type: PreloadPlugin,
     images: assetPaths.images,
   };
+  console.log(assetPaths.images);
 
   // Welcome screen
   var welcome = {
     type: HtmlKeyboardResponsePlugin,
-    stimulus: "Welcome to the experiment. Press any key to begin.",
+    stimulus: "<p>Welcome to the experiment. Press any key to begin.</p>",
   };
 
   // Switch to fullscreen
@@ -156,7 +156,7 @@ export async function run({
     },
   };
 
-  reps = 0;
+  var reps = 0;
   var checkQuiz = {
     timeline: [warning, instructions, multi_choice_block, checkQuiz2],
     conditional_function: function () {
@@ -182,162 +182,228 @@ export async function run({
   };
   /* test trials for first learning block*/
   var test_stimuli_lb1 = [
-    { stimulus: "img/flowers_1119.png", correct_response: "f", category: "sun"},
-    { stimulus: "img/flowers_9999.png", correct_response: "j", category: "shade"},
-    { stimulus: "img/flowers_1111.png", correct_response: "f", category: "sun"},
+    {
+      stimulus: "assets/cat_stims/flower_stim_0.125/flower1_c1r1s1.png",
+      correct_response: "f",
+      category: "sun",
+    },
+    {
+      stimulus: "assets/cat_stims/flower_stim_0.125/flower1_c1r1s1.png",
+      correct_response: "f",
+      category: "sun",
+    },
   ];
-  
-    /* test trials for first learning block*/
-    var test_stimuli_lb2 = [
-    { stimulus: "img/flowers_1111.png", correct_response: "f", category: "sun"},
-    { stimulus: "img/flowers_1119.png", correct_response: "f", category: "sun"}
-    ];
 
-    
-    /* This shows focus crosshairs*/
-    var fixation = {
-      type: 'html-keyboard-response',
-      stimulus: '<div style="font-size:60px;">+</div>',
-      choices: jsPsych.NO_KEYS,
-      trial_duration: 500, // I think this makes it just always 2s? 
-      data: {
-          task: 'fixation'
+  /* test trials for first learning block*/
+  var test_stimuli_lb2 = [
+    {
+      stimulus: "assets/cat_stims/flower_stim_0.125/flower1_c1r1s1.png",
+      correct_response: "f",
+      category: "sun",
+    },
+    {
+      stimulus: "assets/cat_stims/flower_stim_0.125/flower1_c1r1s1.png",
+      correct_response: "f",
+      category: "sun",
+    },
+  ];
+
+  var test_stimuli_lb3 = [
+    {
+      stimulus: "flower1_c1r1s1.png",
+      correct_response: "f",
+      category: "sun",
+    },
+    {
+      stimulus: "flower1_c1r1s1.png",
+      correct_response: "f",
+      category: "sun",
+    },
+  ];
+
+  var test_stimuli_nf = [
+    {
+      stimulus: "flower1_c1r1s1.png",
+      correct_response: "f",
+      category: "sun",
+    },
+    {
+      stimulus: "flower1_c1r1s1.png",
+      correct_response: "f",
+      category: "sun",
+    },
+  ];
+
+  /* This shows focus crosshairs*/
+  var fixation = {
+    type: HtmlKeyboardResponsePlugin,
+    stimulus: '<div style="font-size:60px;">+</div>',
+    choices: "NO_KEYS",
+    trial_duration: 500, // I think this makes it just always 2s?
+    data: {
+      task: "fixation",
+    },
+  };
+
+  var noResp; // to store whether participant responded.
+
+  var categorization_trial = {
+    type: CategorizeImagePlugin,
+    stimulus: jsPsych.timelineVariable("stimulus"),
+    key_answer: jsPsych.timelineVariable("correct_response"),
+    text_answer: jsPsych.timelineVariable("category"),
+    choices: ["f", "j"],
+    correct_text:
+      "<p class='prompt';><span style='color:#006600'>Correct</span>, this flower prefers %ANS%.</p>",
+    incorrect_text:
+      "<p class='prompt'><span style='color:#990000'>Incorrect</span>, this flower prefers %ANS%.</p>",
+    prompt: "<p>Press f for sun. Press j for shade.</p>",
+    data: {
+      task: "response",
+      correct_response: jsPsych.timelineVariable("correct_response"),
+    },
+    on_finish: function (data) {
+      data.correct = jsPsych.pluginAPI.compareKeys(
+        data.response,
+        data.correct_response
+      );
+      if (data.response == null) {
+        noResp = true;
+      } else {
+        noResp = false;
       }
-    }
-  
-    var noResp; // to store whether participant responded. 
-    
-    var categorization_trial = {
-      type: 'categorize-image',
-      stimulus: jsPsych.timelineVariable('stimulus'),
-      key_answer: jsPsych.timelineVariable('correct_response'),
-      text_answer: jsPsych.timelineVariable('category'),
-      choices: ['f', 'j'],
-      correct_text: "<p class='prompt';><span style='color:#006600'>Correct</span>, this flower prefers %ANS%.</p>",
-      incorrect_text: "<p class='prompt'><span style='color:#990000'>Incorrect</span>, this flower prefers %ANS%.</p>",
-      prompt: "<p>Press f for sun. Press j for shade.</p>",
-      data: {
-        task: 'response',
-        correct_response: jsPsych.timelineVariable('correct_response')
-      },
-      on_finish: function(data){
-        data.correct = jsPsych.pluginAPI.compareKeys(data.response, data.correct_response);
-        if(data.response == null) {
-          noResp = true;
-        }
-        else {
-          noResp = false;
-        }
-      },
-      show_feedback_on_timeout: false,
-      trial_duration: 2000,
-    }
-    
-    var categorization_trial_nf = {
-      type: 'categorize-image',
-      stimulus: jsPsych.timelineVariable('stimulus'),
-      key_answer: jsPsych.timelineVariable('correct_response'),
-      text_answer: jsPsych.timelineVariable('category'),
-      choices: ['f', 'j'],
-      correct_text: "",
-      incorrect_text: "",
-      prompt: "<p>Press f for sun. Press j for shade.</p>",
-      data: {
-        task: 'response',
-        correct_response: jsPsych.timelineVariable('correct_response')
-      },
-      on_finish: function(data){
-        data.correct = jsPsych.pluginAPI.compareKeys(data.response, data.correct_response);
-        if(data.response == null) {
-          noResp = true;
-        }
-        else {
-          noResp = false;
-        }
-      },
-      show_feedback_on_timeout: false,
-      trial_duration: 2000,
-      feedback_duration: 0
-  }
-    
-   var respondFaster = {
-      type: 'html-keyboard-response',
-      stimulus: 'Please press "h" to continue.',
-      choices: ['h'] 
-    }
-    
-    var checkPause = {
-      timeline: [respondFaster],
-      conditional_function: function() {
-        return noResp; // Alternate timeline if not all answers correct
+    },
+    show_feedback_on_timeout: false,
+    trial_duration: 2000,
+  };
+
+  var categorization_trial_nf = {
+    type: CategorizeImagePlugin,
+    stimulus: jsPsych.timelineVariable("stimulus"),
+    key_answer: jsPsych.timelineVariable("correct_response"),
+    text_answer: jsPsych.timelineVariable("category"),
+    choices: ["f", "j"],
+    correct_text: "",
+    incorrect_text: "",
+    prompt: "<p>Press f for sun. Press j for shade.</p>",
+    data: {
+      task: "response",
+      correct_response: jsPsych.timelineVariable("correct_response"),
+    },
+    on_finish: function (data) {
+      data.correct = jsPsych.pluginAPI.compareKeys(
+        data.response,
+        data.correct_response
+      );
+      if (data.response == null) {
+        noResp = true;
+      } else {
+        noResp = false;
       }
-    }
-  
-    var test_procedure_lb1 = {
-      timeline: [fixation, categorization_trial, checkPause],
-      timeline_variables: test_stimuli_lb1,
-      repetitions: 1,
-      randomize_order: false
-    }
-    
-    var test_procedure_lb2 = {
-      timeline: [fixation, categorization_trial, checkPause],
-      timeline_variables: test_stimuli_lb2,
-      repetitions: 1,
-      randomize_order: false
-    }
-    
-    var test_procedure_lb3 = {
-      timeline: [fixation, categorization_trial, checkPause],
-      timeline_variables: test_stimuli_lb3,
-      repetitions: 1,
-      randomize_order: false
-    }
-    
-    var test_procedure_nf = {
-      timeline: [fixation, categorization_trial_nf, checkPause],
-      timeline_variables: test_stimuli_nf,
-      repetitions: 1,
-      randomize_order: false
-    }
-    
-    var takeBreak = {
-      type: 'html-keyboard-response',
-      stimulus: `<p>You have reached the end of this block</p>
+    },
+    show_feedback_on_timeout: false,
+    trial_duration: 2000,
+    feedback_duration: 0,
+  };
+
+  var respondFaster = {
+    type: HtmlKeyboardResponsePlugin,
+    stimulus: 'Please press "h" to continue.',
+    choices: ["h"],
+  };
+
+  var checkPause = {
+    timeline: [respondFaster],
+    conditional_function: function () {
+      return noResp; // Alternate timeline if not all answers correct
+    },
+  };
+
+  var test_procedure_lb1 = {
+    timeline: [fixation, categorization_trial, checkPause],
+    timeline_variables: test_stimuli_lb1,
+    repetitions: 1,
+    randomize_order: false,
+  };
+
+  var test_procedure_lb2 = {
+    timeline: [fixation, categorization_trial, checkPause],
+    timeline_variables: test_stimuli_lb2,
+    repetitions: 1,
+    randomize_order: false,
+  };
+
+  var test_procedure_lb3 = {
+    timeline: [fixation, categorization_trial, checkPause],
+    timeline_variables: test_stimuli_lb3,
+    repetitions: 1,
+    randomize_order: false,
+  };
+
+  var test_procedure_nf = {
+    timeline: [fixation, categorization_trial_nf, checkPause],
+    timeline_variables: test_stimuli_nf,
+    repetitions: 1,
+    randomize_order: false,
+  };
+
+  var takeBreak = {
+    type: HtmlKeyboardResponsePlugin,
+    stimulus: `<p>You have reached the end of this block</p>
                 <p>Please take a moment's rest and press "h" when you
                 are ready to proceed</p>`,
-      choices: ['h'] 
-    }
-    
-    var takeBreakNF = {
-    type: 'html-keyboard-response',
+    choices: ["h"],
+  };
+
+  var takeBreakNF = {
+    type: HtmlKeyboardResponsePlugin,
     stimulus: `<p>You have reached the end of this block</p>
               <p>In the next series of trials, you will not receive any feedback.</p>
               <p>Again, please try to respond as quickly and as accurately as possible.</p>
               <p>Please take a moment's rest and press "h" when you
               are ready to proceed</p>`,
-    choices: ['h'] 
-    }
-  
-    /* define debrief */
-  
-    var debrief_block = {
-      type: "html-keyboard-response",
-      stimulus: function() {
-  
-          var trials = jsPsych.data.get().filter({task: 'response'});
-          var correct_trials = trials.filter({correct: true});
-          var accuracy = Math.round(correct_trials.count() / trials.count() * 100);
-  
-          return `<p>You responded correctly on ${accuracy}% of the trials.</p>
+    choices: ["h"],
+  };
+
+  /* define debrief */
+  var debrief_block = {
+    type: HtmlKeyboardResponsePlugin,
+    stimulus: function () {
+      var trials = jsPsych.data.get().filter({ task: "response" });
+      var correct_trials = trials.filter({ correct: true });
+      var accuracy = Math.round(
+        (correct_trials.count() / trials.count()) * 100
+      );
+
+      return `<p>You responded correctly on ${accuracy}% of the trials.</p>
           <p>Congratulations, you have qualified for the performance bonus!</p>
           <p><b>Note that this is the first part of a two-part study</b></p>
           <p>You must complete Part 2 to receive payment for participation</p>
           <p><b>We will send you an invitation to complete Part 2 within two weeks</b></p>
           <p>Press any key to complete the experiment. Thank you!</p>`;
-      }
-    }
-  
+    },
+  };
+
+  /* define timeline of experiment */
+  timeline.push(
+    preload,
+    configureScreen,
+    welcome,
+    instructions,
+    multi_choice_block,
+    checkQuiz,
+    begin,
+    test_procedure_lb1,
+    takeBreak,
+    test_procedure_lb2,
+    takeBreak,
+    test_procedure_lb3,
+    takeBreakNF,
+    test_procedure_nf,
+    configureScreenEnd,
+    debrief_block
+  );
+
   await jsPsych.run(timeline);
 
   // Return the jsPsych instance so jsPsych Builder can access the experiment results (remove this
